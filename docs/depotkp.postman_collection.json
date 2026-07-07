@@ -1,0 +1,447 @@
+{
+  "info": {
+    "name": "Depo Takip API",
+    "description": "Restoran depo takip sistemi REST API koleksiyonu. Once 'Auth > Login (Admin)' calistir; token otomatik olarak {{admin_token}} degiskenine kaydedilir. Ayni sekilde 'Login (Staff)' -> {{staff_token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3001/api" },
+    { "key": "admin_email", "value": "admin@demorestoran.com" },
+    { "key": "admin_password", "value": "Admin123!" },
+    { "key": "staff_email", "value": "ahmet@demorestoran.com" },
+    { "key": "staff_password", "value": "Staff123!" },
+    { "key": "admin_token", "value": "" },
+    { "key": "staff_token", "value": "" },
+    { "key": "product_id", "value": "55555555-5555-5555-5555-555555555001" },
+    { "key": "category_id", "value": "44444444-4444-4444-4444-444444444001" },
+    { "key": "unit_id", "value": "33333333-3333-3333-3333-333333333001" },
+    { "key": "supplier_id", "value": "66666666-6666-6666-6666-666666666002" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"] } }
+        },
+        {
+          "name": "GET /health/db",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{base_url}}/health/db", "host": ["{{base_url}}"], "path": ["health", "db"] } }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.token) {",
+                  "  pm.collectionVariables.set('admin_token', json.data.token);",
+                  "  console.log('admin_token kaydedildi');",
+                  "}",
+                  "pm.test('Giris basarili', () => pm.response.code === 200);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login (Staff)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.token) {",
+                  "  pm.collectionVariables.set('staff_token', json.data.token);",
+                  "  console.log('staff_token kaydedildi');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{staff_email}}\",\n  \"password\": \"{{staff_password}}\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "GET /auth/me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth", "me"] }
+          }
+        },
+        {
+          "name": "POST /auth/users (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"full_name\": \"Yeni Calisan\",\n  \"email\": \"calisan@demorestoran.com\",\n  \"password\": \"Staff123!\",\n  \"role\": \"staff\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/users", "host": ["{{base_url}}"], "path": ["auth", "users"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Units",
+      "item": [
+        {
+          "name": "GET /units",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/units", "host": ["{{base_url}}"], "path": ["units"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "GET /categories",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/categories", "host": ["{{base_url}}"], "path": ["categories"] }
+          }
+        },
+        {
+          "name": "POST /categories (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Baharatlar\",\n  \"description\": \"Kuru baharat urunleri\"\n}" },
+            "url": { "raw": "{{base_url}}/categories", "host": ["{{base_url}}"], "path": ["categories"] }
+          }
+        },
+        {
+          "name": "PUT /categories/:id (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Baharat & Sos\",\n  \"description\": null\n}" },
+            "url": { "raw": "{{base_url}}/categories/:id", "host": ["{{base_url}}"], "path": ["categories", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        },
+        {
+          "name": "DELETE /categories/:id (admin, soft)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/categories/:id", "host": ["{{base_url}}"], "path": ["categories", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "GET /products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/products", "host": ["{{base_url}}"], "path": ["products"] }
+          }
+        },
+        {
+          "name": "GET /products/:id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/products/{{product_id}}", "host": ["{{base_url}}"], "path": ["products", "{{product_id}}"] }
+          }
+        },
+        {
+          "name": "POST /products (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Dana Kiyma\",\n  \"category_id\": \"{{category_id}}\",\n  \"unit_id\": \"{{unit_id}}\",\n  \"sku\": \"ET-KIY-01\",\n  \"min_stock_level\": 5\n}" },
+            "url": { "raw": "{{base_url}}/products", "host": ["{{base_url}}"], "path": ["products"] }
+          }
+        },
+        {
+          "name": "PUT /products/:id (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Tavuk But\",\n  \"category_id\": \"{{category_id}}\",\n  \"unit_id\": \"{{unit_id}}\",\n  \"min_stock_level\": 12\n}" },
+            "url": { "raw": "{{base_url}}/products/{{product_id}}", "host": ["{{base_url}}"], "path": ["products", "{{product_id}}"] }
+          }
+        },
+        {
+          "name": "DELETE /products/:id (admin, soft)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/products/:id", "host": ["{{base_url}}"], "path": ["products", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stock",
+      "item": [
+        {
+          "name": "POST /stock/movements - IN (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"product_id\": \"{{product_id}}\",\n  \"movement_type\": \"IN\",\n  \"quantity\": 10,\n  \"unit_cost\": 210,\n  \"supplier_id\": \"{{supplier_id}}\",\n  \"document_no\": \"FTR-2026-0706-01\"\n}" },
+            "url": { "raw": "{{base_url}}/stock/movements", "host": ["{{base_url}}"], "path": ["stock", "movements"] }
+          }
+        },
+        {
+          "name": "POST /stock/movements - OUT (staff)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{staff_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"product_id\": \"{{product_id}}\",\n  \"movement_type\": \"OUT\",\n  \"quantity\": 5,\n  \"note\": \"Mutfak kullanimi\"\n}" },
+            "url": { "raw": "{{base_url}}/stock/movements", "host": ["{{base_url}}"], "path": ["stock", "movements"] }
+          }
+        },
+        {
+          "name": "POST /stock/movements - ADJUSTMENT (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"product_id\": \"{{product_id}}\",\n  \"movement_type\": \"ADJUSTMENT\",\n  \"direction\": \"out\",\n  \"quantity\": 2,\n  \"note\": \"Bozulan urun\"\n}" },
+            "url": { "raw": "{{base_url}}/stock/movements", "host": ["{{base_url}}"], "path": ["stock", "movements"] }
+          }
+        },
+        {
+          "name": "GET /stock/products/:id/movements",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/stock/products/{{product_id}}/movements", "host": ["{{base_url}}"], "path": ["stock", "products", "{{product_id}}", "movements"] }
+          }
+        },
+        {
+          "name": "GET /stock/products/:id/purchase-history (admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/stock/products/{{product_id}}/purchase-history", "host": ["{{base_url}}"], "path": ["stock", "products", "{{product_id}}", "purchase-history"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory Counts",
+      "item": [
+        {
+          "name": "POST /inventory-counts (create + snapshot)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"note\": \"Temmuz ayi sayimi\"\n}" },
+            "url": { "raw": "{{base_url}}/inventory-counts", "host": ["{{base_url}}"], "path": ["inventory-counts"] }
+          }
+        },
+        {
+          "name": "GET /inventory-counts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/inventory-counts", "host": ["{{base_url}}"], "path": ["inventory-counts"] }
+          }
+        },
+        {
+          "name": "GET /inventory-counts/:id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/inventory-counts/:id", "host": ["{{base_url}}"], "path": ["inventory-counts", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        },
+        {
+          "name": "PUT /inventory-counts/:id/items",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"items\": [\n    { \"product_id\": \"{{product_id}}\", \"counted_quantity\": 26, \"note\": \"Fiziksel sayim\" }\n  ]\n}" },
+            "url": { "raw": "{{base_url}}/inventory-counts/:id/items", "host": ["{{base_url}}"], "path": ["inventory-counts", ":id", "items"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        },
+        {
+          "name": "POST /inventory-counts/:id/complete (admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/inventory-counts/:id/complete", "host": ["{{base_url}}"], "path": ["inventory-counts", ":id", "complete"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        },
+        {
+          "name": "POST /inventory-counts/:id/cancel (admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/inventory-counts/:id/cancel", "host": ["{{base_url}}"], "path": ["inventory-counts", ":id", "cancel"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "GET /reports/consumption (period=month)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/reports/consumption?period=month",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "consumption"],
+              "query": [
+                { "key": "period", "value": "month", "description": "week | month (from/to verilmezse)" },
+                { "key": "from", "value": "2026-06-01", "disabled": true },
+                { "key": "to", "value": "2026-07-06", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /reports/purchases (period=month)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/reports/purchases?period=month",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "purchases"],
+              "query": [{ "key": "period", "value": "month" }]
+            }
+          }
+        },
+        {
+          "name": "GET /reports/low-stock",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/reports/low-stock", "host": ["{{base_url}}"], "path": ["reports", "low-stock"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Suppliers",
+      "item": [
+        {
+          "name": "GET /suppliers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/suppliers", "host": ["{{base_url}}"], "path": ["suppliers"] }
+          }
+        },
+        {
+          "name": "GET /suppliers/:id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/suppliers/:id", "host": ["{{base_url}}"], "path": ["suppliers", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        },
+        {
+          "name": "POST /suppliers (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Deniz Urunleri Ltd\",\n  \"phone\": \"05551112233\",\n  \"email\": \"info@denizurunleri.com\",\n  \"address\": \"Izmir\",\n  \"note\": \"Haftalik teslimat\"\n}" },
+            "url": { "raw": "{{base_url}}/suppliers", "host": ["{{base_url}}"], "path": ["suppliers"] }
+          }
+        },
+        {
+          "name": "PUT /suppliers/:id (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Deniz Urunleri A.S.\",\n  \"phone\": \"05559998877\"\n}" },
+            "url": { "raw": "{{base_url}}/suppliers/:id", "host": ["{{base_url}}"], "path": ["suppliers", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        },
+        {
+          "name": "DELETE /suppliers/:id (admin, soft)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/suppliers/:id", "host": ["{{base_url}}"], "path": ["suppliers", ":id"], "variable": [{ "key": "id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "GET /dashboard/summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/dashboard/summary", "host": ["{{base_url}}"], "path": ["dashboard", "summary"] }
+          }
+        }
+      ]
+    }
+  ]
+}

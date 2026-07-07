@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Temel gövde ayarları - mobil öncelikli */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-[#e9eef5] text-slate-900 antialiased;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+input,
+select,
+textarea {
+  min-height: 44px;
+  font-size: 16px;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  min-height: 40px;
+}
+
+@layer components {
+  .app-shell {
+    @apply min-h-full w-full bg-[#e9eef5];
+  }
+
+  .app-card {
+    @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+  }
+
+  .app-card-accent {
+    @apply rounded-xl border border-l-4 border-slate-200 border-l-[#f0642f] bg-white shadow-sm;
+  }
+
+  .app-hero {
+    @apply rounded-xl bg-[#4d5a70] p-5 text-white shadow-sm;
+  }
+
+  .app-button-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-[#4d5a70] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#414c5f] disabled:opacity-60;
+  }
+
+  .app-button-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60;
+  }
+
+  .app-input {
+    @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-300/50;
+  }
+
+  .app-label {
+    @apply mb-1 block text-sm font-semibold text-slate-700;
+  }
+
+  .app-section-title {
+    @apply text-sm font-semibold uppercase tracking-wide text-slate-500;
+  }
+
+  .app-badge {
+    @apply inline-flex w-fit items-center rounded-lg px-2 py-1 text-xs font-semibold;
+  }
+}
