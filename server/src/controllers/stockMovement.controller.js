@@ -2,6 +2,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const { successResponse } = require('../utils/response');
 const stockService = require('../services/stockMovement.service');
 const { validateCreateMovement } = require('../validations/stock.validation');
+const { stripPriceFieldsForStaff } = require('../utils/priceVisibility');
 
 // POST /api/stock/movements
 // Rol kuralı serviste uygulanır: staff yalnızca OUT, admin tümü.
@@ -15,12 +16,14 @@ const create = asyncHandler(async (req, res) => {
 });
 
 // GET /api/stock/products/:productId/movements  (admin + staff)
+// STAFF için unit_cost gibi fiyat/maliyet alanları response'tan çıkarılır.
 const listByProduct = asyncHandler(async (req, res) => {
   const movements = await stockService.getProductMovements(
     req.user.business_id,
     req.params.productId
   );
-  return successResponse(res, movements, 'Ürün stok hareketleri');
+  const safeMovements = stripPriceFieldsForStaff(movements, req.user.role);
+  return successResponse(res, safeMovements, 'Ürün stok hareketleri');
 });
 
 // GET /api/stock/products/:productId/purchase-history  (admin only - fiyat bilgisi)
