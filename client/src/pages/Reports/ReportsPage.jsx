@@ -25,6 +25,12 @@ function thirtyDaysAgo() {
   return date.toISOString().slice(0, 10);
 }
 
+function sevenDaysAgo() {
+  const date = new Date();
+  date.setDate(date.getDate() - 7);
+  return date.toISOString().slice(0, 10);
+}
+
 function formatNumber(value) {
   if (value == null || value === '') return '-';
   const parsed = Number(value);
@@ -51,12 +57,12 @@ export default function ReportsPage() {
   const rows = data?.items || [];
   const isRangeReport = type !== 'lowStock';
 
-  const loadReport = async () => {
+  const loadReport = async (overrides = {}) => {
     if (!isAdmin) return;
     setLoading(true);
     setError('');
     try {
-      const filters = { from, to };
+      const filters = { from: overrides.from ?? from, to: overrides.to ?? to };
       if (type === 'consumption') {
         setData(await getConsumptionReport(filters));
       } else if (type === 'purchases') {
@@ -70,6 +76,14 @@ export default function ReportsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyPreset = (days) => {
+    const start = days === 7 ? sevenDaysAgo() : thirtyDaysAgo();
+    const end = today();
+    setFrom(start);
+    setTo(end);
+    loadReport({ from: start, to: end });
   };
 
   useEffect(() => {
@@ -117,6 +131,25 @@ export default function ReportsPage() {
             ))}
           </select>
         </div>
+
+        {isRangeReport && (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => applyPreset(7)}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            >
+              Haftalık
+            </button>
+            <button
+              type="button"
+              onClick={() => applyPreset(30)}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            >
+              Aylık
+            </button>
+          </div>
+        )}
 
         {isRangeReport && (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
