@@ -10,14 +10,26 @@ const {
 const { authenticate } = require('../middlewares/auth.middleware');
 const { authorize } = require('../middlewares/role.middleware');
 const { ROLES } = require('../constants/roles');
+const env = require('../config/env');
+const AppError = require('../utils/AppError');
 
 const router = express.Router();
+
+// Public kayıt varsayılan olarak kapalıdır. Yalnızca
+// ALLOW_PUBLIC_REGISTRATION=true olduğunda /register çalışır.
+function requirePublicRegistrationEnabled(req, res, next) {
+  if (!env.ALLOW_PUBLIC_REGISTRATION) {
+    return next(new AppError('Public registration is disabled', 403));
+  }
+  return next();
+}
 
 // POST /api/auth/login -> giriş yap, token al (herkese açık)
 router.post('/login', login);
 
-// POST /api/auth/register -> yeni işletme + admin oluştur (herkese açık)
-router.post('/register', register);
+// POST /api/auth/register -> yeni işletme + admin oluştur
+// (ALLOW_PUBLIC_REGISTRATION=true değilse 403 döner)
+router.post('/register', requirePublicRegistrationEnabled, register);
 
 // GET /api/auth/me -> giriş yapmış kullanıcının bilgisi (token gerekli)
 router.get('/me', authenticate, me);

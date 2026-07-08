@@ -8,6 +8,8 @@ const env = {
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   CORS_ORIGIN: process.env.CORS_ORIGIN || '*',
+  // Güvenli varsayılan: yalnızca tam olarak "true" ise public kayıt açılır.
+  ALLOW_PUBLIC_REGISTRATION: process.env.ALLOW_PUBLIC_REGISTRATION === 'true',
 };
 
 // Uygulamanın çalışması için kritik olan değişken eksikse geliştiriciyi uyar

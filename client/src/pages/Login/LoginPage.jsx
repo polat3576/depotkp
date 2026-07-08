@@ -122,12 +122,14 @@ export default function LoginPage() {
           </button>
           </div>
 
-          <p className="mt-5 text-center text-sm text-slate-500">
-            Hesabınız yok mu?{' '}
-            <Link to="/register" className="font-semibold text-[#46556b] hover:underline">
-              İşletme kaydı oluşturun
-            </Link>
-          </p>
+          {import.meta.env.VITE_ALLOW_PUBLIC_REGISTRATION === 'true' && (
+            <p className="mt-5 text-center text-sm text-slate-500">
+              Hesabınız yok mu?{' '}
+              <Link to="/register" className="font-semibold text-[#46556b] hover:underline">
+                İşletme kaydı oluşturun
+              </Link>
+            </p>
+          )}
         </form>
       </div>
     </div>
