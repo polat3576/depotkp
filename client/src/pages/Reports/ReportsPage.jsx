@@ -128,18 +128,15 @@ export default function ReportsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-base font-semibold text-slate-800">Raporlar</h2>
-        <p className="text-xs text-slate-500">Tüketim, alım ve düşük stok özetleri.</p>
+        <p className="app-page-eyebrow">Depo yönetimi</p>
+        <h2 className="app-page-title text-xl">Raporlar</h2>
+        <p className="app-page-subtitle">Tüketim, alım ve düşük stok özetleri.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3 rounded-xl bg-white p-4 shadow-sm">
+      <form onSubmit={handleSubmit} className="app-card space-y-3 p-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Rapor tipi</label>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          >
+          <label className="app-label">Rapor tipi</label>
+          <select value={type} onChange={(e) => setType(e.target.value)} className="app-input">
             {Object.entries(reportTypes).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
@@ -153,14 +150,14 @@ export default function ReportsPage() {
             <button
               type="button"
               onClick={() => applyPreset(7)}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              className="app-button-secondary px-3 py-1.5 text-xs"
             >
               Haftalık
             </button>
             <button
               type="button"
               onClick={() => applyPreset(30)}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              className="app-button-secondary px-3 py-1.5 text-xs"
             >
               Aylık
             </button>
@@ -170,40 +167,26 @@ export default function ReportsPage() {
         {isRangeReport && (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Başlangıç</label>
-              <input
-                type="date"
-                value={from}
-                onChange={(e) => setFrom(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-              />
+              <label className="app-label">Başlangıç</label>
+              <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="app-input" />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Bitiş</label>
-              <input
-                type="date"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-              />
+              <label className="app-label">Bitiş</label>
+              <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="app-input" />
             </div>
           </div>
         )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-slate-800 py-2.5 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-60"
-        >
+        <button type="submit" disabled={loading} className="app-button-primary w-full">
           {loading ? 'Yükleniyor...' : 'Raporu Getir'}
         </button>
       </form>
 
-      {error && <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+      {error && <div className="app-alert-error">{error}</div>}
 
       <section>
-        <h3 className="mb-2 text-sm font-semibold text-slate-700">{reportTypes[type]}</h3>
-        <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
+        <h3 className="app-section-title mb-2">{reportTypes[type]}</h3>
+        <div className="app-card overflow-x-auto">
           {loading ? (
             <Loader label="Rapor yükleniyor..." />
           ) : rows.length === 0 ? (

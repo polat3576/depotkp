@@ -74,4 +74,36 @@ button {
   .app-badge {
     @apply inline-flex w-fit items-center rounded-lg px-2 py-1 text-xs font-semibold;
   }
+
+  .app-pill {
+    @apply inline-flex w-fit items-center rounded-full px-2 py-0.5 text-xs font-semibold;
+  }
+
+  .app-page-eyebrow {
+    @apply text-xs font-bold uppercase tracking-wide text-slate-500;
+  }
+
+  .app-page-title {
+    @apply mt-1 text-2xl font-black tracking-tight text-slate-900;
+  }
+
+  .app-page-subtitle {
+    @apply mt-1 text-sm text-slate-500;
+  }
+
+  .app-button-accent {
+    @apply inline-flex items-center justify-center rounded-lg bg-[#f0642f] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#d95727] disabled:opacity-60;
+  }
+
+  .app-alert-error {
+    @apply rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700;
+  }
+
+  .app-alert-success {
+    @apply rounded-xl border border-green-100 bg-green-50 px-3 py-2 text-sm text-green-700;
+  }
+
+  .app-list-row {
+    @apply px-4 py-3 transition hover:bg-slate-50/70;
+  }
 }

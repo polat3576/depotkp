@@ -120,25 +120,24 @@ export default function SuppliersPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-base font-semibold text-slate-800">Tedarikçiler</h2>
-        <p className="text-xs text-slate-500">Stok girişlerinde kullanılacak tedarikçi kayıtları.</p>
+        <p className="app-page-eyebrow">Depo yönetimi</p>
+        <h2 className="app-page-title text-xl">Tedarikçiler</h2>
+        <p className="app-page-subtitle">Stok girişlerinde kullanılacak tedarikçi kayıtları.</p>
       </div>
 
-      {error && <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
-      {message && (
-        <div className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{message}</div>
-      )}
+      {error && <div className="app-alert-error">{error}</div>}
+      {message && <div className="app-alert-success">{message}</div>}
 
-      <form onSubmit={handleSubmit} className="space-y-3 rounded-xl bg-white p-4 shadow-sm">
+      <form onSubmit={handleSubmit} className="app-card space-y-3 p-4">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-sm font-semibold text-slate-700">
+          <h3 className="app-section-title">
             {editingId ? 'Tedarikçi Düzenle' : 'Yeni Tedarikçi'}
           </h3>
           {editingId && (
             <button
               type="button"
               onClick={resetForm}
-              className="text-sm font-medium text-slate-500 hover:underline"
+              className="text-sm font-semibold text-slate-500 hover:underline"
             >
               Vazgeç
             </button>
@@ -146,90 +145,83 @@ export default function SuppliersPage() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Ad</label>
+          <label className="app-label">Ad</label>
           <input
             type="text"
             value={form.name}
             onChange={(e) => handleChange('name', e.target.value)}
             required
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className="app-input"
             placeholder="Tedarikçi adı"
           />
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Telefon</label>
+            <label className="app-label">Telefon</label>
             <input
               type="tel"
               value={form.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="app-input"
               placeholder="Opsiyonel"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">E-posta</label>
+            <label className="app-label">E-posta</label>
             <input
               type="email"
               value={form.email}
               onChange={(e) => handleChange('email', e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="app-input"
               placeholder="Opsiyonel"
             />
           </div>
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Adres</label>
+          <label className="app-label">Adres</label>
           <input
             type="text"
             value={form.address}
             onChange={(e) => handleChange('address', e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className="app-input"
             placeholder="Opsiyonel"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Not</label>
+          <label className="app-label">Not</label>
           <input
             type="text"
             value={form.note}
             onChange={(e) => handleChange('note', e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className="app-input"
             placeholder="Opsiyonel"
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full rounded-lg bg-slate-800 py-2.5 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-60"
-        >
+        <button type="submit" disabled={saving} className="app-button-primary w-full">
           {saving ? 'Kaydediliyor...' : editingId ? 'Güncelle' : 'Ekle'}
         </button>
       </form>
 
       <section>
-        <h3 className="mb-2 text-sm font-semibold text-slate-700">Tedarikçi Listesi</h3>
-        <div className="overflow-hidden rounded-xl bg-white shadow-sm">
+        <h3 className="app-section-title mb-2">Tedarikçi Listesi</h3>
+        <div className="app-card divide-y divide-slate-100 overflow-hidden">
           {loading || !suppliers ? (
             <Loader label="Tedarikçiler yükleniyor..." />
           ) : suppliers.length === 0 ? (
             <p className="p-4 text-sm text-slate-500">Henüz tedarikçi yok.</p>
           ) : (
             suppliers.map((supplier) => (
-              <div
-                key={supplier.id}
-                className="border-b border-slate-100 px-4 py-3 last:border-0"
-              >
+              <div key={supplier.id} className="app-list-row">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate text-sm font-medium text-slate-800">{supplier.name}</p>
+                      <p className="truncate text-sm font-semibold text-slate-800">{supplier.name}</p>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        className={`app-pill ${
                           supplier.is_active
                             ? 'bg-green-100 text-green-700'
                             : 'bg-slate-200 text-slate-600'

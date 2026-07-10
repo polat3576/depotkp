@@ -89,7 +89,7 @@ export default function ProductFormPage() {
   };
 
   if (loadError) {
-    return <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{loadError}</div>;
+    return <div className="app-alert-error">{loadError}</div>;
   }
   if (!categories) {
     return <Loader />;
@@ -98,34 +98,37 @@ export default function ProductFormPage() {
   return (
     <div className="mx-auto max-w-md space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold text-slate-800">Yeni Ürün</h2>
-        <Link to="/products" className="text-sm text-slate-500 hover:underline">
+        <div>
+          <p className="app-page-eyebrow">Ürün yönetimi</p>
+          <h2 className="app-page-title text-xl">Yeni Ürün</h2>
+        </div>
+        <Link to="/products" className="text-sm font-semibold text-slate-500 hover:underline">
           ← Ürünler
         </Link>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-xl bg-white p-4 shadow-sm sm:p-5">
+      <form onSubmit={handleSubmit} className="app-card space-y-4 p-4 sm:p-5">
         {/* Ürün adı */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Ürün Adı</label>
+          <label className="app-label">Ürün Adı</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className="app-input"
             placeholder="Örn. Tavuk But"
           />
         </div>
 
         {/* Kategori */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Kategori</label>
+          <label className="app-label">Kategori</label>
           {categories.length > 0 && (
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="app-input"
             >
               <option value="">Kategori seçin...</option>
               {categories.map((c) => (
@@ -142,14 +145,14 @@ export default function ProductFormPage() {
               type="text"
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
-              className="w-full flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="app-input flex-1"
               placeholder={categories.length === 0 ? 'İlk kategoriyi ekleyin' : 'Yeni kategori adı'}
             />
             <button
               type="button"
               onClick={handleAddCategory}
               disabled={addingCategory || !newCategoryName.trim()}
-              className="w-full rounded-lg bg-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-300 disabled:opacity-50 sm:w-auto"
+              className="app-button-secondary w-full sm:w-auto"
             >
               {addingCategory ? '...' : 'Ekle'}
             </button>
@@ -163,12 +166,8 @@ export default function ProductFormPage() {
 
         {/* Birim */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Birim</label>
-          <select
-            value={unitId}
-            onChange={(e) => setUnitId(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-          >
+          <label className="app-label">Birim</label>
+          <select value={unitId} onChange={(e) => setUnitId(e.target.value)} className="app-input">
             <option value="">Birim seçin...</option>
             {units.map((u) => (
               <option key={u.id} value={u.id}>
@@ -180,13 +179,11 @@ export default function ProductFormPage() {
 
         {/* Varsayılan Tedarikçi */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            Varsayılan Tedarikçi
-          </label>
+          <label className="app-label">Varsayılan Tedarikçi</label>
           <select
             value={supplierId}
             onChange={(e) => setSupplierId(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className="app-input"
           >
             <option value="">(Opsiyonel)</option>
             {suppliers.map((s) => (
@@ -204,36 +201,36 @@ export default function ProductFormPage() {
         {/* SKU / Barkod / Min stok */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">SKU</label>
+            <label className="app-label">SKU</label>
             <input
               type="text"
               value={sku}
               onChange={(e) => setSku(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="app-input"
               placeholder="Opsiyonel"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Min. Stok</label>
+            <label className="app-label">Min. Stok</label>
             <input
               type="number"
               min="0"
               step="any"
               value={minStockLevel}
               onChange={(e) => setMinStockLevel(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="app-input"
               placeholder="0"
             />
           </div>
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Barkod</label>
+          <label className="app-label">Barkod</label>
           <input
             type="text"
             value={barcode}
             onChange={(e) => setBarcode(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className="app-input"
             placeholder="Opsiyonel"
           />
         </div>
@@ -242,13 +239,9 @@ export default function ProductFormPage() {
           Not: Başlangıç stoğu 0 olarak oluşur. Stok, "Stok" ekranından giriş/çıkış ile değişir.
         </p>
 
-        {error && <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+        {error && <div className="app-alert-error">{error}</div>}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-lg bg-slate-800 py-2.5 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-60"
-        >
+        <button type="submit" disabled={submitting} className="app-button-primary w-full">
           {submitting ? 'Kaydediliyor...' : 'Ürünü Kaydet'}
         </button>
       </form>

@@ -88,7 +88,7 @@ export default function ProductsPage() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+      <div className="app-alert-error font-medium">
         Bir şeyler ters gitti. Lütfen tekrar dene.
       </div>
     );
@@ -102,18 +102,15 @@ export default function ProductsPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Ürün yönetimi</p>
-          <h2 className="mt-1 text-2xl font-black text-slate-900">Ürün listesi</h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="app-page-eyebrow">Ürün yönetimi</p>
+          <h2 className="app-page-title">Ürün listesi</h2>
+          <p className="app-page-subtitle">
             Depodaki ürünleri, mevcut miktarı ve kritik stok durumunu takip et.
           </p>
         </div>
 
         {isAdmin && (
-          <Link
-            to="/products/new"
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-[#f0642f] px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#d95727]"
-          >
+          <Link to="/products/new" className="app-button-accent h-10">
             + Yeni ürün
           </Link>
         )}
@@ -126,12 +123,12 @@ export default function ProductsPage() {
             value={search}
             onChange={handleSearchChange}
             placeholder="Ürün, kategori veya tedarikçi ara..."
-            className="h-11 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-300/50"
+            className="app-input h-11 flex-1"
           />
           <select
             value={stockFilter}
             onChange={handleStockFilterChange}
-            className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-slate-400"
+            className="app-input h-11 font-medium"
           >
             <option value="all">Tüm stoklar</option>
             <option value="ok">Stokta</option>
@@ -141,11 +138,7 @@ export default function ProductsPage() {
             {resultText}
           </div>
           {hasActiveSearch && (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
-            >
+            <button type="button" onClick={clearSearch} className="app-button-secondary h-11">
               Temizle
             </button>
           )}
