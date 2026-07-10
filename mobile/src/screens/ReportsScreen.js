@@ -46,19 +46,29 @@ function formatMoney(value) {
     : number.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
 }
 
+function formatDate(value) {
+  if (!value) return '-';
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? '-' : parsed.toLocaleDateString('tr-TR');
+}
+
 const ReportCard = memo(function ReportCard({ type, row }) {
   if (type === 'purchases') {
-    const quantity = Number(row.total_quantity);
-    const cost = Number(row.total_cost);
-    const average = quantity > 0 ? cost / quantity : null;
     return (
       <View style={styles.resultCard}>
         <Text style={styles.productName}>{row.product_name}</Text>
-        <Text style={styles.meta}>Toplam alım: {formatNumber(row.total_quantity)} {row.unit}</Text>
-        <Text style={styles.meta}>Toplam maliyet: {formatMoney(row.total_cost)}</Text>
-        <Text style={styles.meta}>Ortalama birim fiyat: {formatMoney(average)}</Text>
-        <Text style={styles.meta}>Hareket sayısı: {formatNumber(row.movement_count)}</Text>
+        <Text style={styles.meta}>Tarih: {formatDate(row.purchase_date)}</Text>
+        <Text style={styles.meta}>Miktar: {formatNumber(row.quantity)} {row.unit}</Text>
+        <Text style={styles.meta}>Birim fiyat: {formatMoney(row.unit_cost)}</Text>
+        <Text style={styles.meta}>Toplam tutar: {formatMoney(row.total_cost)}</Text>
         {row.supplier_name ? <Text style={styles.meta}>Tedarikçi: {row.supplier_name}</Text> : null}
+        <Text style={styles.meta}>Tüketilen: {formatNumber(row.consumed_quantity)} {row.unit}</Text>
+        <Text style={styles.meta}>Kalan (tahmini): {formatNumber(row.remaining_quantity)} {row.unit}</Text>
+        <Text style={row.is_active ? styles.activeText : styles.meta}>
+          {row.is_active
+            ? `Aktif · ${row.days_covered} gün`
+            : `${row.days_covered} gün sonra yeni alım`}
+        </Text>
       </View>
     );
   }
@@ -228,7 +238,7 @@ export default function ReportsScreen() {
   return (
     <FlatList
       data={loading ? [] : rows}
-      keyExtractor={(item, index) => String(item.product_id || item.id || index)}
+      keyExtractor={(item, index) => String(item.movement_id || item.product_id || item.id || index)}
       renderItem={renderReport}
       ItemSeparatorComponent={renderSeparator}
       ListHeaderComponent={renderHeader}
@@ -303,4 +313,5 @@ const styles = StyleSheet.create({
   productName: { fontSize: 17, fontWeight: '800', color: '#0F172A' },
   meta: { color: '#64748B' },
   lowText: { fontWeight: '800', color: '#F59E0B' },
+  activeText: { fontWeight: '700', color: '#0F766E' },
 });

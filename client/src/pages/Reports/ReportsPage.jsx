@@ -45,6 +45,12 @@ function formatMoney(value) {
     : parsed.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
 }
 
+function formatDate(value) {
+  if (!value) return '-';
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? '-' : parsed.toLocaleDateString('tr-TR');
+}
+
 export default function ReportsPage() {
   const { isAdmin } = useAuth();
   const [type, setType] = useState('consumption');
@@ -92,7 +98,17 @@ export default function ReportsPage() {
 
   const columns = useMemo(() => {
     if (type === 'purchases') {
-      return ['Ürün', 'Miktar', 'Toplam maliyet', 'Hareket'];
+      return [
+        'Tarih',
+        'Ürün',
+        'Miktar',
+        'Birim Fiyat',
+        'Toplam Tutar',
+        'Tedarikçi',
+        'Tüketilen',
+        'Kalan (tahmini)',
+        'Durum',
+      ];
     }
     if (type === 'lowStock') {
       return ['Ürün', 'Mevcut', 'Minimum', 'Eksik'];
@@ -193,7 +209,11 @@ export default function ReportsPage() {
           ) : rows.length === 0 ? (
             <p className="p-4 text-sm text-slate-500">Bu filtrelere uygun veri yok.</p>
           ) : (
-            <table className="min-w-[560px] divide-y divide-slate-100 text-sm">
+            <table
+              className={`divide-y divide-slate-100 text-sm ${
+                type === 'purchases' ? 'min-w-[920px]' : 'min-w-[560px]'
+              }`}
+            >
               <thead className="bg-slate-50 text-left text-xs font-semibold text-slate-500">
                 <tr>
                   {columns.map((col) => (
@@ -204,41 +224,76 @@ export default function ReportsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {rows.map((row) => (
-                  <tr key={row.product_id}>
-                    <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-800">
-                      {row.product_name}
-                    </td>
-                    {type === 'lowStock' ? (
-                      <>
+                {type === 'purchases'
+                  ? rows.map((row) => (
+                      <tr key={row.movement_id}>
                         <td className="whitespace-nowrap px-4 py-3 text-slate-600">
-                          {formatNumber(row.current_stock)} {row.unit}
+                          {formatDate(row.purchase_date)}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-800">
+                          {row.product_name}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-slate-600">
-                          {formatNumber(row.min_stock_level)} {row.unit}
+                          {formatNumber(row.quantity)} {row.unit}
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 font-semibold text-red-700">
-                          {formatNumber(Number(row.min_stock_level) - Number(row.current_stock))}{' '}
-                          {row.unit}
-                        </td>
-                      </>
-                    ) : (
-                      <>
                         <td className="whitespace-nowrap px-4 py-3 text-slate-600">
-                          {formatNumber(row.total_quantity)} {row.unit}
+                          {formatMoney(row.unit_cost)}
                         </td>
-                        {type === 'purchases' && (
-                          <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-800">
-                            {formatMoney(row.total_cost)}
-                          </td>
+                        <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-800">
+                          {formatMoney(row.total_cost)}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-slate-600">
+                          {row.supplier_name || '-'}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-slate-600">
+                          {formatNumber(row.consumed_quantity)} {row.unit}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-slate-600">
+                          {formatNumber(row.remaining_quantity)} {row.unit}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3">
+                          {row.is_active ? (
+                            <span className="font-medium text-emerald-700">
+                              Aktif · {row.days_covered} gün
+                            </span>
+                          ) : (
+                            <span className="text-slate-500">
+                              {row.days_covered} gün sonra yeni alım
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  : rows.map((row) => (
+                      <tr key={row.product_id}>
+                        <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-800">
+                          {row.product_name}
+                        </td>
+                        {type === 'lowStock' ? (
+                          <>
+                            <td className="whitespace-nowrap px-4 py-3 text-slate-600">
+                              {formatNumber(row.current_stock)} {row.unit}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-slate-600">
+                              {formatNumber(row.min_stock_level)} {row.unit}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 font-semibold text-red-700">
+                              {formatNumber(Number(row.min_stock_level) - Number(row.current_stock))}{' '}
+                              {row.unit}
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="whitespace-nowrap px-4 py-3 text-slate-600">
+                              {formatNumber(row.total_quantity)} {row.unit}
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-slate-600">
+                              {formatNumber(row.movement_count)}
+                            </td>
+                          </>
                         )}
-                        <td className="whitespace-nowrap px-4 py-3 text-slate-600">
-                          {formatNumber(row.movement_count)}
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                ))}
+                      </tr>
+                    ))}
               </tbody>
             </table>
           )}

@@ -27,26 +27,53 @@ async function consumptionByProduct(businessId, fromIso, toIso) {
   return result.rows;
 }
 
-// Alım raporu: verilen tarih aralığında ürün bazında toplam GİRİŞ (IN)
-// miktarı ve toplam maliyeti.
-async function purchasesByProduct(businessId, fromIso, toIso) {
+// Alım detay raporu: verilen tarih aralığındaki her tek alım (IN) hareketi
+// ayrı satır olarak döner (tarih, birim fiyat, miktar, tedarikçi). Ayrıca
+// her satır için "next_purchase_at" hesaplanır: aynı ürünün bir SONRAKİ
+// alımının tarihi (yoksa NULL -> bu, ürünün hâlâ aktif/son partisi).
+// "consumed_quantity", bu alım tarihinden sonraki alıma kadar (ya da son
+// alımsa bugüne kadar) yapılan ÇIKIŞ (OUT) toplamıdır -> "bu alım ne kadar
+// idare etmiş" sorusuna yaklaşık bir cevaptır. Parti/lot takibi olmadığı
+// için kesin FIFO eşleştirmesi değil, zaman aralığına dayalı bir tahmindir.
+async function purchaseDetail(businessId, fromIso, toIso) {
   const sql = `
+    WITH purchases AS (
+      SELECT
+        sm.id, sm.product_id, sm.quantity, sm.unit_cost,
+        sm.occurred_at, sm.document_no, sm.supplier_id,
+        LEAD(sm.occurred_at) OVER (
+          PARTITION BY sm.product_id ORDER BY sm.occurred_at, sm.id
+        ) AS next_purchase_at
+      FROM stock_movements sm
+      WHERE sm.business_id = $1 AND sm.movement_type = 'IN'
+    )
     SELECT
-      p.id AS product_id,
-      p.name AS product_name,
+      p.id AS movement_id,
+      pr.id AS product_id,
+      pr.name AS product_name,
       u.short_name AS unit,
-      SUM(sm.quantity) AS total_quantity,
-      SUM(sm.quantity * sm.unit_cost) AS total_cost,
-      COUNT(*) AS movement_count
-    FROM stock_movements sm
-    JOIN products p ON p.id = sm.product_id
-    JOIN units u ON u.id = p.unit_id
-    WHERE sm.business_id = $1
-      AND sm.movement_type = 'IN'
-      AND sm.occurred_at >= $2
-      AND sm.occurred_at <= $3
-    GROUP BY p.id, p.name, u.short_name
-    ORDER BY total_cost DESC
+      p.occurred_at AS purchase_date,
+      p.quantity,
+      p.unit_cost,
+      (p.quantity * p.unit_cost) AS total_cost,
+      p.document_no,
+      s.name AS supplier_name,
+      p.next_purchase_at,
+      COALESCE((
+        SELECT SUM(o.quantity)
+        FROM stock_movements o
+        WHERE o.business_id = $1
+          AND o.product_id = p.product_id
+          AND o.movement_type = 'OUT'
+          AND o.occurred_at >= p.occurred_at
+          AND (p.next_purchase_at IS NULL OR o.occurred_at < p.next_purchase_at)
+      ), 0) AS consumed_quantity
+    FROM purchases p
+    JOIN products pr ON pr.id = p.product_id
+    JOIN units u ON u.id = pr.unit_id
+    LEFT JOIN suppliers s ON s.id = p.supplier_id
+    WHERE p.occurred_at >= $2 AND p.occurred_at <= $3
+    ORDER BY p.occurred_at DESC
   `;
   const result = await query(sql, [businessId, fromIso, toIso]);
   return result.rows;
@@ -76,6 +103,6 @@ async function lowStock(businessId) {
 
 module.exports = {
   consumptionByProduct,
-  purchasesByProduct,
+  purchaseDetail,
   lowStock,
 };
