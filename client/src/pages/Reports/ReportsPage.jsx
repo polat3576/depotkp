@@ -184,6 +184,25 @@ export default function ReportsPage() {
 
       {error && <div className="app-alert-error">{error}</div>}
 
+      {type === 'purchases' && data?.summary && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="app-card p-4">
+            <p className="text-sm font-semibold text-slate-500">Toplam harcama</p>
+            <p className="mt-1 text-2xl font-black text-slate-900">
+              {formatMoney(data.summary.totalCost)}
+            </p>
+            <p className="mt-1 text-xs text-slate-500">Seçilen tarih aralığındaki tüm alımlar</p>
+          </div>
+          <div className="app-card p-4">
+            <p className="text-sm font-semibold text-slate-500">Alım sayısı</p>
+            <p className="mt-1 text-2xl font-black text-slate-900">
+              {formatNumber(data.summary.purchaseCount)}
+            </p>
+            <p className="mt-1 text-xs text-slate-500">Seçilen tarih aralığındaki alım işlemi</p>
+          </div>
+        </div>
+      )}
+
       <section>
         <h3 className="app-section-title mb-2">{reportTypes[type]}</h3>
         <div className="app-card overflow-x-auto">

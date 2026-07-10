@@ -135,6 +135,28 @@ async function deactivate(id, businessId) {
   return result.rows[0] || null;
 }
 
+// Kullanıcıyı yeniden aktif eder.
+async function activate(id, businessId) {
+  const sql = `
+    UPDATE users
+    SET is_active = true, updated_at = now()
+    WHERE id = $1 AND business_id = $2
+    RETURNING id, business_id, full_name, email, user_code, role, is_active,
+              created_at, updated_at
+  `;
+  const result = await query(sql, [id, businessId]);
+  return result.rows[0] || null;
+}
+
+// Kullanıcıyı kalıcı olarak siler. Kullanıcının stok hareketi / sayım
+// geçmişi varsa (ON DELETE RESTRICT) veritabanı hata fırlatır; service
+// katmanı bunu yakalayıp kullanıcı dostu bir mesaja çevirir.
+async function hardDelete(id, businessId) {
+  const sql = `DELETE FROM users WHERE id = $1 AND business_id = $2 RETURNING id`;
+  const result = await query(sql, [id, businessId]);
+  return result.rowCount > 0;
+}
+
 module.exports = {
   findBusinessByEmail,
   findByBusinessAndCode,
@@ -146,4 +168,6 @@ module.exports = {
   createBusinessWithAdmin,
   findAllForBusiness,
   deactivate,
+  activate,
+  hardDelete,
 };

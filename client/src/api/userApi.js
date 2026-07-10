@@ -15,3 +15,14 @@ export function createUser(payload) {
 export function deactivateUser(id) {
   return api.delete(`/auth/users/${id}`).then(unwrap);
 }
+
+// Kullanıcıyı yeniden aktif et (yalnızca admin).
+export function activateUser(id) {
+  return api.patch(`/auth/users/${id}/activate`).then(unwrap);
+}
+
+// Kullanıcıyı kalıcı olarak sil (yalnızca admin). Hareket/sayım geçmişi
+// varsa backend 409 döner.
+export function deleteUserPermanently(id) {
+  return api.delete(`/auth/users/${id}/permanent`).then(unwrap);
+}

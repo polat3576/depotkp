@@ -103,6 +103,7 @@ export default function ReportsScreen() {
   const [startDate, setStartDate] = useState(thirtyDaysAgo);
   const [endDate, setEndDate] = useState(today);
   const [rows, setRows] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const filtersRef = useRef({ startDate: '', endDate: '' });
@@ -128,8 +129,10 @@ export default function ReportsScreen() {
         result = await getLowStockReport();
       }
       setRows(result.items || []);
+      setSummary(result.summary || null);
     } catch (err) {
       setRows([]);
+      setSummary(null);
       setError(getErrorMessage(err, 'Rapor alınamadı'));
     } finally {
       setLoading(false);
@@ -215,6 +218,19 @@ export default function ReportsScreen() {
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
+      {type === 'purchases' && summary ? (
+        <View style={styles.summaryRow}>
+          <View style={styles.summaryCard}>
+            <Text style={styles.meta}>Toplam harcama</Text>
+            <Text style={styles.summaryValue}>{formatMoney(summary.totalCost)}</Text>
+          </View>
+          <View style={styles.summaryCard}>
+            <Text style={styles.meta}>Alım sayısı</Text>
+            <Text style={styles.summaryValue}>{formatNumber(summary.purchaseCount)}</Text>
+          </View>
+        </View>
+      ) : null}
+
       <Text style={styles.sectionTitle}>{reportTypes.find((item) => item.value === type)?.label}</Text>
       {loading ? (
         <View style={styles.loadingBox}>
@@ -260,6 +276,9 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: '800', color: '#0F172A' },
   subtitle: { marginTop: 4, color: '#64748B' },
   filterCard: { gap: 10, borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 14, padding: 14, backgroundColor: '#FFFFFF' },
+  summaryRow: { flexDirection: 'row', gap: 10, marginTop: 12 },
+  summaryCard: { flex: 1, gap: 4, borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 14, padding: 14, backgroundColor: '#FFFFFF' },
+  summaryValue: { fontSize: 20, fontWeight: '800', color: '#0F172A' },
   label: { fontSize: 14, fontWeight: '700', color: '#0F172A' },
   choiceList: { gap: 8 },
   choice: {

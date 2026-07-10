@@ -154,6 +154,39 @@ async function deactivateUser({ businessId, targetUserId, currentUserId }) {
   return toPublicUser(user);
 }
 
+// Kullanıcıyı yeniden aktif eder. Yalnızca aynı işletmedeki kullanıcı hedeflenebilir.
+async function activateUser({ businessId, targetUserId }) {
+  const user = await userRepository.activate(targetUserId, businessId);
+  if (!user) {
+    throw new AppError('Kullanıcı bulunamadı', 404);
+  }
+  return toPublicUser(user);
+}
+
+// Kullanıcıyı kalıcı olarak siler. Admin kendi hesabını silemez. Kullanıcının
+// stok hareketi / sayım geçmişi varsa veritabanı bunu engeller (ON DELETE
+// RESTRICT) -> bu durumda "önce pasife alın" mesajı gösterilir.
+async function deleteUser({ businessId, targetUserId, currentUserId }) {
+  if (targetUserId === currentUserId) {
+    throw new AppError('Kendi hesabınızı silemezsiniz', 400);
+  }
+
+  try {
+    const deleted = await userRepository.hardDelete(targetUserId, businessId);
+    if (!deleted) {
+      throw new AppError('Kullanıcı bulunamadı', 404);
+    }
+  } catch (err) {
+    if (err.code === '23503') {
+      throw new AppError(
+        'Bu kullanıcının stok hareketi veya sayım geçmişi olduğu için tamamen silinemez. Bunun yerine pasife alabilirsiniz.',
+        409
+      );
+    }
+    throw err;
+  }
+}
+
 module.exports = {
   login,
   register,
@@ -161,4 +194,6 @@ module.exports = {
   createUser,
   listUsers,
   deactivateUser,
+  activateUser,
+  deleteUser,
 };

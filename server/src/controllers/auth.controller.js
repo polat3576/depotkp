@@ -54,6 +54,25 @@ const deactivateUser = asyncHandler(async (req, res) => {
   return successResponse(res, user, 'Kullanıcı pasife alındı');
 });
 
+// PATCH /api/auth/users/:id/activate  (yalnızca admin) - kullanıcıyı yeniden aktif et
+const activateUser = asyncHandler(async (req, res) => {
+  const user = await authService.activateUser({
+    businessId: req.user.business_id,
+    targetUserId: req.params.id,
+  });
+  return successResponse(res, user, 'Kullanıcı aktif edildi');
+});
+
+// DELETE /api/auth/users/:id/permanent  (yalnızca admin) - kullanıcıyı kalıcı sil
+const deleteUser = asyncHandler(async (req, res) => {
+  await authService.deleteUser({
+    businessId: req.user.business_id,
+    targetUserId: req.params.id,
+    currentUserId: req.user.id,
+  });
+  return successResponse(res, null, 'Kullanıcı kalıcı olarak silindi');
+});
+
 module.exports = {
   login,
   register,
@@ -61,4 +80,6 @@ module.exports = {
   createUser,
   listUsers,
   deactivateUser,
+  activateUser,
+  deleteUser,
 };

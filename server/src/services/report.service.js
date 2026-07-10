@@ -35,12 +35,22 @@ function enrichPurchaseRow(row) {
 }
 
 // Alım (satın alma) detay raporu: her alım hareketi ayrı satır, fiyat +
-// "ne kadar idare etmiş" bilgisiyle birlikte.
+// "ne kadar idare etmiş" bilgisiyle birlikte. summary, seçilen tarih
+// aralığındaki tüm alımların toplamıdır (tek tek satırların toplamı).
 async function getPurchases(businessId, queryParams) {
   const range = resolveRange(queryParams);
   const rows = await reportRepository.purchaseDetail(businessId, range.from, range.to);
   const items = rows.map(enrichPurchaseRow);
-  return { range, items };
+
+  const summary = items.reduce(
+    (acc, item) => ({
+      totalCost: acc.totalCost + Number(item.total_cost),
+      purchaseCount: acc.purchaseCount + 1,
+    }),
+    { totalCost: 0, purchaseCount: 0 }
+  );
+
+  return { range, items, summary };
 }
 
 // Kritik stok raporu (tarih aralığı gerektirmez).

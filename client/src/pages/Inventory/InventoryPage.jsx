@@ -45,6 +45,8 @@ export default function InventoryPage() {
   const [error, setError] = useState('');
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [itemSearch, setItemSearch] = useState('');
+  const [onlyPending, setOnlyPending] = useState(false);
 
   const loadCounts = async () => {
     const data = await getInventoryCounts();
@@ -80,6 +82,8 @@ export default function InventoryPage() {
 
   useEffect(() => {
     if (selectedId) {
+      setItemSearch('');
+      setOnlyPending(false);
       loadDetail(selectedId);
     }
   }, [selectedId]);
@@ -97,6 +101,23 @@ export default function InventoryPage() {
         note: item.note || undefined,
       }));
   }, [detail, drafts]);
+
+  const progress = useMemo(() => {
+    const total = detail?.items.length || 0;
+    const counted = countedItems.length;
+    const percent = total === 0 ? 0 : Math.round((counted / total) * 100);
+    return { total, counted, percent };
+  }, [detail, countedItems]);
+
+  const visibleItems = useMemo(() => {
+    if (!detail) return [];
+    const term = itemSearch.trim().toLowerCase();
+    return detail.items.filter((item) => {
+      const matchesSearch = !term || item.product_name.toLowerCase().includes(term);
+      const matchesPending = !onlyPending || drafts[item.product_id] === '';
+      return matchesSearch && matchesPending;
+    });
+  }, [detail, itemSearch, onlyPending, drafts]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -136,6 +157,15 @@ export default function InventoryPage() {
   };
 
   const handleComplete = async () => {
+    if (progress.counted < progress.total) {
+      const proceed = window.confirm(
+        `${progress.total - progress.counted} ürün henüz sayılmadı. Yine de sayımı tamamlamak istiyor musunuz? Sayılmayan ürünlerin stoğu değişmez.`
+      );
+      if (!proceed) return;
+    } else if (!window.confirm('Sayım tamamlansın mı? Farklar için stok düzeltmesi oluşturulacak.')) {
+      return;
+    }
+
     setBusy(true);
     setError('');
     setMessage('');
@@ -152,6 +182,8 @@ export default function InventoryPage() {
   };
 
   const handleCancel = async () => {
+    if (!window.confirm('Bu sayım iptal edilsin mi? Girilen miktarlar kaybolur.')) return;
+
     setBusy(true);
     setError('');
     setMessage('');
@@ -246,52 +278,102 @@ export default function InventoryPage() {
             <Loader label="Sayım detayı yükleniyor..." />
           ) : (
             <>
-              <div className="space-y-3">
-                {detail.items.map((item) => {
-                  const counted = drafts[item.product_id];
-                  const expected = Number(item.expected_quantity);
-                  const diff =
-                    counted === ''
-                      ? displayQty(item.difference_quantity)
-                      : Number(counted) - expected;
+              <div className="app-card space-y-2 p-4">
+                <div className="flex items-center justify-between text-sm">
+                  <p className="font-semibold text-slate-700">
+                    {progress.counted} / {progress.total} ürün sayıldı
+                  </p>
+                  <p className="text-xs text-slate-500">%{progress.percent}</p>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className="h-full rounded-full bg-[#4d5a70] transition-all"
+                    style={{ width: `${progress.percent}%` }}
+                  />
+                </div>
+              </div>
 
-                  return (
-                    <div key={item.id} className="app-card p-4">
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-800">
-                            {item.product_name}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            Beklenen: {displayQty(item.expected_quantity)} {item.unit_short_name}
-                          </p>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <input
+                  type="search"
+                  value={itemSearch}
+                  onChange={(e) => setItemSearch(e.target.value)}
+                  placeholder="Ürün ara..."
+                  className="app-input flex-1"
+                />
+                <label className="flex shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={onlyPending}
+                    onChange={(e) => setOnlyPending(e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300"
+                  />
+                  Yalnızca sayılmayanlar
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {visibleItems.length === 0 ? (
+                  <p className="p-4 text-sm text-slate-500 sm:col-span-2">
+                    Aramanıza uygun ürün bulunmuyor.
+                  </p>
+                ) : (
+                  visibleItems.map((item) => {
+                    const counted = drafts[item.product_id];
+                    const isCounted = counted !== '';
+                    const expected = Number(item.expected_quantity);
+                    const diff =
+                      counted === ''
+                        ? displayQty(item.difference_quantity)
+                        : Number(counted) - expected;
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={`app-card border-l-4 p-4 ${
+                          isCounted ? 'border-l-emerald-400' : 'border-l-amber-400'
+                        }`}
+                      >
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-slate-800">
+                              {item.product_name}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              Beklenen: {displayQty(item.expected_quantity)} {item.unit_short_name}
+                            </p>
+                          </div>
+                          {isCounted ? (
+                            <div className="sm:text-right">
+                              <p className="text-xs text-slate-500">Fark</p>
+                              <p
+                                className={`text-sm font-semibold ${
+                                  Number(diff) !== 0 ? 'text-amber-700' : 'text-emerald-700'
+                                }`}
+                              >
+                                {diff} {item.unit_short_name}
+                              </p>
+                            </div>
+                          ) : (
+                            <span className="app-pill bg-amber-50 text-amber-700">Bekliyor</span>
+                          )}
                         </div>
-                        <div className="sm:text-right">
-                          <p className="text-xs text-slate-500">Fark</p>
-                          <p
-                            className={`text-sm font-semibold ${
-                              Number(diff) !== 0 ? 'text-amber-700' : 'text-slate-800'
-                            }`}
-                          >
-                            {diff} {item.unit_short_name}
-                          </p>
-                        </div>
+                        <input
+                          type="number"
+                          min="0"
+                          step="any"
+                          value={counted}
+                          onChange={(e) =>
+                            setDrafts((prev) => ({ ...prev, [item.product_id]: e.target.value }))
+                          }
+                          disabled={!isDraft || busy}
+                          className="app-input mt-3 disabled:bg-slate-100"
+                          placeholder="Sayılan miktar"
+                        />
                       </div>
-                      <input
-                        type="number"
-                        min="0"
-                        step="any"
-                        value={counted}
-                        onChange={(e) =>
-                          setDrafts((prev) => ({ ...prev, [item.product_id]: e.target.value }))
-                        }
-                        disabled={!isDraft || busy}
-                        className="app-input mt-3 disabled:bg-slate-100"
-                        placeholder="Sayılan miktar"
-                      />
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
 
               <div className="space-y-2">

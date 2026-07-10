@@ -6,6 +6,8 @@ const {
   createUser,
   listUsers,
   deactivateUser,
+  activateUser,
+  deleteUser,
 } = require('../controllers/auth.controller');
 const { authenticate } = require('../middlewares/auth.middleware');
 const { authorize } = require('../middlewares/role.middleware');
@@ -42,5 +44,11 @@ router.post('/users', authenticate, authorize(ROLES.ADMIN), createUser);
 
 // DELETE /api/auth/users/:id -> kullanıcıyı pasifleştir (yalnızca admin)
 router.delete('/users/:id', authenticate, authorize(ROLES.ADMIN), deactivateUser);
+
+// PATCH /api/auth/users/:id/activate -> kullanıcıyı yeniden aktif et (yalnızca admin)
+router.patch('/users/:id/activate', authenticate, authorize(ROLES.ADMIN), activateUser);
+
+// DELETE /api/auth/users/:id/permanent -> kullanıcıyı kalıcı sil (yalnızca admin)
+router.delete('/users/:id/permanent', authenticate, authorize(ROLES.ADMIN), deleteUser);
 
 module.exports = router;

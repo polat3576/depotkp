@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { createUser, deactivateUser, getUsers } from '../../api/userApi';
+import {
+  activateUser,
+  createUser,
+  deactivateUser,
+  deleteUserPermanently,
+  getUsers,
+} from '../../api/userApi';
 import { getErrorMessage } from '../../api/axiosClient';
 import { useAuth } from '../../context/AuthContext.jsx';
 import Loader from '../../components/common/Loader.jsx';
@@ -113,6 +119,43 @@ export default function UsersPage() {
       await loadUsers();
     } catch (err) {
       setError(getErrorMessage(err, 'Kullanıcı pasife alınamadı'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleActivate = async (user) => {
+    setSaving(true);
+    setMessage('');
+    setError('');
+    try {
+      await activateUser(user.id);
+      setMessage('Kullanıcı yeniden aktif edildi.');
+      await loadUsers();
+    } catch (err) {
+      setError(getErrorMessage(err, 'Kullanıcı aktif edilemedi'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (user) => {
+    if (
+      !window.confirm(
+        `${user.full_name} kalıcı olarak silinsin mi? Bu işlem geri alınamaz.`
+      )
+    )
+      return;
+
+    setSaving(true);
+    setMessage('');
+    setError('');
+    try {
+      await deleteUserPermanently(user.id);
+      setMessage('Kullanıcı kalıcı olarak silindi.');
+      await loadUsers();
+    } catch (err) {
+      setError(getErrorMessage(err, 'Kullanıcı silinemedi'));
     } finally {
       setSaving(false);
     }
@@ -264,19 +307,40 @@ export default function UsersPage() {
                         Kod: {user.user_code || '-'} · {user.email}
                       </p>
                     </div>
-                    <div className="shrink-0">
+                    <div className="flex shrink-0 gap-2">
                       {isSelf ? (
                         <span className="text-xs font-medium text-slate-400">Bu hesap sizsiniz</span>
-                      ) : user.is_active ? (
-                        <button
-                          type="button"
-                          onClick={() => handleDeactivate(user)}
-                          disabled={saving}
-                          className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100 disabled:opacity-60"
-                        >
-                          Pasifleştir
-                        </button>
-                      ) : null}
+                      ) : (
+                        <>
+                          {user.is_active ? (
+                            <button
+                              type="button"
+                              onClick={() => handleDeactivate(user)}
+                              disabled={saving}
+                              className="rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-60"
+                            >
+                              Pasifleştir
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleActivate(user)}
+                              disabled={saving}
+                              className="rounded-lg bg-green-50 px-3 py-2 text-sm font-semibold text-green-700 hover:bg-green-100 disabled:opacity-60"
+                            >
+                              Aktif Et
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(user)}
+                            disabled={saving}
+                            className="rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:opacity-60"
+                          >
+                            Sil
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
